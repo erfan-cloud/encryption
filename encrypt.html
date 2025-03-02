@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AES Encryption</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #result {
+            word-wrap: break-word; /* Allows long words to be broken and wrap onto the next line */
+            white-space: pre-wrap; /* Preserves whitespace and wraps text */
+            border: 1px solid #ccc; /* Optional: adds a border around the result */
+            padding: 10px; /* Optional: adds some padding */
+            max-width: 100%; /* Ensures it doesn't exceed the width of the container */
+            overflow-wrap: break-word; /* Breaks long words */
+        }
+    </style>
+</head>
+<body>
+    <h1>Encrypt Text</h1>
+    <input type="password" id="password" placeholder="Enter password">
+    <input type="text" id="textToEncrypt" placeholder="Enter text to encrypt">
+    <button id="encryptButton">Encrypt</button>
+
+    <p id="result"></p>
+
+    <script>
+        document.getElementById('encryptButton').addEventListener('click', function() {
+            const password = document.getElementById('password').value;
+            const textToEncrypt = document.getElementById('textToEncrypt').value;
+
+            // Generate a random salt
+            const salt = CryptoJS.lib.WordArray.random(16);
+
+            // Derive key using PBKDF2
+            const key = CryptoJS.PBKDF2(password, salt, {
+                keySize: 256 / 32,
+                iterations: 1000
+            });
+
+            // Encrypt the text
+            const encrypted = CryptoJS.AES.encrypt(textToEncrypt, key, {
+                iv: salt, // Using salt as IV for simplicity
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+
+            // Combine salt and ciphertext
+            const encryptedData = salt.toString() + ':' + encrypted.toString();
+
+            // Display the encrypted data
+            document.getElementById('result').innerText = 'Encrypted data: \n' + encryptedData;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(encryptedData).then(() => {
+                console.log('Encrypted data copied to clipboard');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        });
+    </script>
+</body>
+</html>
